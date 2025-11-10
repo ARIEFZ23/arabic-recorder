@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arabic Audio Recorder - latifah </title>
+    <title>Arabic Audio Recorder - Preview Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -131,6 +131,11 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
+        .word-item.preview-mode {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+
         .word-number {
             text-align: center;
             flex-shrink: 0;
@@ -163,14 +168,22 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            color: #10b981;
             font-size: 0.9rem;
+        }
+
+        .word-status.uploaded {
+            color: #10b981;
+        }
+
+        .word-status.preview {
+            color: #f59e0b;
         }
 
         .word-actions {
             display: flex;
             gap: 10px;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
         .btn-icon {
@@ -208,6 +221,25 @@
 
         .btn-play:hover {
             background: #2563eb;
+        }
+
+        .btn-publish {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-publish:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        .btn-rerecord {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-rerecord:hover {
+            background: #d97706;
         }
 
         .btn-delete {
@@ -273,7 +305,7 @@
         <div class="header">
             <h1>🎙️ Arabic Audio Recorder</h1>
             <div class="user-badge">👤 KAKAK</div>
-            <p class="subtitle">Rekaman otomatis upload ke Google Drive!</p>
+            <p class="subtitle">Rekam → Preview → Publish ke Google Drive!</p>
 
             <div id="uploadStatus" class="upload-status"></div>
 
@@ -296,36 +328,38 @@
                 <li>Klik tombol <strong>mikrofon 🎤</strong> untuk mulai rekam</li>
                 <li>Baca kata/frasa dengan jelas</li>
                 <li>Klik tombol <strong>stop ⏹️</strong> setelah selesai</li>
-                <li>Audio <strong>otomatis upload</strong> ke Google Drive dengan nama: <code>kakak_001.webm</code>, <code>kakak_002.webm</code>, dst</li>
-                <li>Bisa play ▶️ untuk cek, atau delete 🗑️ untuk rekam ulang</li>
+                <li>Klik <strong>play ▶️</strong> untuk cek hasil rekaman</li>
+                <li>Jika sudah benar, klik <strong>publish 📤</strong> untuk upload ke Google Drive</li>
+                <li>Jika salah, klik <strong>rekam ulang 🔄</strong></li>
+                <li>File akan disimpan dengan nama Arab: <code>مَرْحَبًا.webm</code>, <code>شُكْرًا.webm</code>, dst</li>
             </ol>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxT9bLQ4kU-WyfqTDlrMpZ__5YRaPcRDSZwbR-NDRwT7MS7mPMFU3OhlG3fxANKki0/exec';
-        const USER_NAME = 'latifah';
+        const USER_NAME = 'kakak';
 
         const defaultWords = [
-            'مَرْحَبًا', 'شُكْرًا', 'نَعَمْ', 'لَا', 'مَاءٌ', 'كِتَابٌ', 'قَلَمٌ', 'بَيْتٌ', 'سَيَّارَةٌ', 'مَدْرَسَةٌ',
+            'مَرْحَبًا', 'شُكْرًا', 'نَعَمْ', 'لَا', 'مَاءٌ', 'كُتَابٌ', 'قَلَمٌ', 'بَيْتٌ', 'سَيَّارَةٌ', 'مَدْرَسَةٌ',
             'مُعَلِّمٌ', 'طَالِبٌ', 'صَدِيقٌ', 'عَائِلَةٌ', 'أَبٌ', 'أُمٌّ', 'أَخٌ', 'أُخْتٌ', 'ابْنٌ', 'بِنْتٌ',
             'يَوْمٌ', 'لَيْلَةٌ', 'صَبَاحٌ', 'مَسَاءٌ', 'شَمْسٌ', 'قَمَرٌ', 'سَمَاءٌ', 'أَرْضٌ', 'بَحْرٌ', 'جَبَلٌ',
             'شَجَرَةٌ', 'زَهْرَةٌ', 'طَعَامٌ', 'شَرَابٌ', 'خُبْزٌ', 'لَحْمٌ', 'فَاكِهَةٌ', 'خُضَارٌ', 'حَلِيبٌ', 'عَسَلٌ',
             'كَبِيرٌ', 'صَغِيرٌ', 'جَمِيلٌ', 'قَبِيحٌ', 'سَرِيعٌ', 'بَطِيءٌ', 'جَدِيدٌ', 'قَدِيمٌ', 'حَارٌّ', 'بَارِدٌ',
-            'اَلسَّلَامُ عَلَيْكُمْ', 'وَعَلَيْكُمُ السَّلَامُ', 'صَبَاحُ الْخَيْرِ', 'مَسَاءُ الْخَيْرِ', 'كَيْفَ حَالُكَ', 'بِخَيْرٍ وَالْحَمْدُ لِلّٰهِ', 'مَا اسْمُكَ', 'أَنَا طَالِبٌ', 'هٰذَا كِتَابٌ', 'تِلْكَ سَيَّارَةٌ',
+            'اَلسَّلَامُ عَلَيْكُمْ', 'وَعَلَيْكُمُ السَّلَامُ', 'صَبَاحُ الْخَيْرِ', 'مَسَاءُ الْخَيْرِ', 'كَيْفَ حَالُكَ', 'بِخَيْرٍ وَالْحَمْدُ لِلّٰهِ', 'مَا اسْمُكَ', 'أَنَا طَالِبٌ', 'هٰذَا كُتَابٌ', 'تِلْكَ سَيَّارَةٌ',
             'أَيْنَ الْمَدْرَسَةُ', 'فِي الْبَيْتِ', 'عَلَى الطَّاوِلَةِ', 'تَحْتَ الْكُرْسِيِّ', 'فَوْقَ السَّرِيرِ', 'أَمَامَ الْمَسْجِدِ', 'خَلْفَ الْبَابِ', 'بِجَانِبِ النَّافِذَةِ', 'بَيْنَ الشَّجَرَتَيْنِ', 'مِنْ فَضْلِكَ',
             'شُكْرًا جَزِيلًا', 'عَفْوًا أَخِي', 'أَهْلًا وَسَهْلًا', 'مَعَ السَّلَامَةِ', 'إِلَى اللِّقَاءِ', 'تُصْبِحُ عَلَى خَيْرٍ', 'بَارَكَ اللّٰهُ', 'مَا شَاءَ اللّٰهُ', 'اَلْحَمْدُ لِلّٰهِ', 'إِنْ شَاءَ اللّٰهُ',
             'أُرِيدُ مَاءً', 'أُحِبُّ الْقِرَاءَةَ', 'أَذْهَبُ لِلْمَدْرَسَةِ', 'أَدْرُسُ الْعَرَبِيَّةَ', 'أَكْتُبُ الْوَاجِبَ', 'أَكَلَ الطَّعَامَ', 'شَرِبَ الْحَلِيبَ', 'لَعِبَ الْكُرَةَ', 'نَامَ مُبَكِّرًا', 'اِسْتَيْقَظَ صَبَاحًا',
             'طَقْسٌ جَمِيلٌ', 'يَوْمٌ حَارٌّ', 'لَيْلَةٌ بَارِدَةٌ', 'سَمَاءٌ صَافِيَةٌ', 'مَطَرٌ غَزِيرٌ', 'رِيحٌ قَوِيَّةٌ', 'شَمْسٌ سَاطِعَةٌ', 'قَمَرٌ مُنِيرٌ', 'نُجُومٌ لَامِعَةٌ', 'غُيُومٌ كَثِيرَةٌ',
-            'أَنَا أُحِبُّ الْقِرَاءَةَ', 'هُوَ طَالِبٌ مُجْتَهِدٌ', 'هِيَ مُعَلِّمَةٌ مُمْتَازَةٌ', 'نَحْنُ أَصْدِقَاءُ جَيِّدُونَ', 'هُمْ يَدْرُسُونَ الْعَرَبِيَّةَ', 'أَنْتَ تَكْتُبُ الدَّرْسَ', 'أَنْتُمْ تَلْعَبُونَ الْكُرَةَ', 'اَلْبَيْتُ كَبِيرٌ جِدًّا', 'اَلسَّيَّارَةُ سَرِيعَةٌ جِدًّا', 'اَلْكِتَابُ عَلَى الطَّاوِلَةِ',
+            'أَنَا أُحِبُّ الْقِرَاءَةَ', 'هُوَ طَالِبٌ مُجْتَهِدٌ', 'هِيَ مُعَلِّمَةٌ مُمْتَازَةٌ', 'نَحْنُ أَصْدِقَاءُ جَيِّدُونَ', 'هُمْ يَدْرُسُونَ الْعَرَبِيَّةَ', 'أَنْتَ تَكْتُبُ الدَّرْسَ', 'أَنْتُمْ تَلْعَبُونَ الْكُرَةَ', 'اَلْبَيْتُ كَبِيرٌ جِدًّا', 'اَلسَّيَّارَةُ سَرِيعَةٌ جِدًّا', 'اَلْكُتَابُ عَلَى الطَّاوِلَةِ',
             'اَلْقَلَمُ فِي الْحَقِيبَةِ', 'اَلْمَدْرَسَةُ قَرِيبَةٌ مِنَ الْبَيْتِ', 'اَلطَّعَامُ لَذِيذٌ جِدًّا', 'اَلْمَاءُ بَارِدٌ مُنْعِشٌ', 'اَلْجَوُّ حَارٌّ الْيَوْمَ', 'اَلسَّمَاءُ صَافِيَةٌ جَمِيلَةٌ', 'اَلشَّجَرَةُ كَبِيرَةٌ خَضْرَاءُ', 'اَلزَّهْرَةُ جَمِيلَةٌ مُلَوَّنَةٌ', 'أَذْهَبُ إِلَى الْمَدْرَسَةِ', 'أُحِبُّ أَنْ أَقْرَأَ',
             'أُرِيدُ أَنْ أَكْتُبَ', 'يَجِبُ أَنْ أَدْرُسَ', 'سَوْفَ أَذْهَبُ غَدًا', 'كُنْتُ فِي الْبَيْتِ', 'كَانَ الطَّقْسُ جَمِيلًا', 'سَيَكُونُ الْيَوْمُ سَعِيدًا', 'أَكَلْتُ التُّفَّاحَ اللَّذِيذَ', 'شَرِبْتُ الْمَاءَ الْبَارِدَ', 'لَعِبْتُ مَعَ أَصْدِقَائِي', 'دَرَسْتُ الدَّرْسَ جَيِّدًا',
             'كَتَبْتُ الْوَاجِبَ الْمَنْزِلِيَّ', 'قَرَأْتُ الْقِصَّةَ الْجَمِيلَةَ', 'شَاهَدْتُ الْفِيلْمَ الْمُمْتِعَ', 'اِسْتَمَعْتُ إِلَى الْمُوسِيقَى', 'ذَهَبْتُ إِلَى السُّوقِ', 'اِشْتَرَيْتُ الْخُبْزَ الطَّازَجَ', 'رَأَيْتُ الطَّائِرَ الْجَمِيلَ', 'سَمِعْتُ الصَّوْتَ الْعَالِيَ', 'فَتَحْتُ الْبَابَ بِبُطْءٍ', 'أَغْلَقْتُ النَّافِذَةَ بِسُرْعَةٍ',
-            'نَظَّفْتُ الْغُرْفَةَ بِعِنَايَةٍ', 'رَتَّبْتُ الْكُتُبَ بِنِظَامٍ', 'طَبَخْتُ الطَّعَامَ اللَّذِيذَ', 'غَسَلْتُ الْمَلَابِسَ النَّظِيفَةَ', 'كَنَسْتُ الْأَرْضَ جَيِّدًا', 'مَسَحْتُ الطَّاوِلَةَ بِقِطْعَةٍ', 'زَرَعْتُ الزُّهُورَ الْجَمِيلَةَ', 'سَقَيْتُ النَّبَاتَاتِ بِمَاءٍ', 'قَطَفْتُ الْفَاكِهَةَ النَّاضِجَةَ', 'أَكَلْتُ الْعَشَاءَ مَسَاءً'
+            'نَظَّفْتُ الْغُرْفَةَ بِعِنَايَةٍ', 'رَتَّبْتُ الْكُتُبَ بِنِظَامٍ', 'طَبَخْتُ الطَّعَامَ اللَّذِيذَ', 'غَسَلْتُ الْمَلَابِسَ النَّظِيفَةَ', 'كَنَسْتُ الْأَرْضَ جَيِّدًا', 'مَسَحْتُ الطَّاوِلَةَ بِقُطْعَةٍ', 'زَرَعْتُ الزُّهُورَ الْجَمِيلَةَ', 'سَقَيْتُ النَّبَاتَاتِ بِمَاءٍ', 'قَطَفْتُ الْفَاكِهَةَ النَّاضِجَةَ', 'أَكَلْتُ الْعَشَاءَ مَسَاءً'
         ];
 
         let words = [...defaultWords];
-        let recordings = {};
+        let recordings = {}; // { index: { blob, url, word, status: 'preview' or 'uploaded' } }
         let mediaRecorder = null;
         let audioChunks = [];
         let currentRecording = null;
@@ -339,10 +373,12 @@
 
             words.forEach((word, index) => {
                 const category = getCategory(index);
-                const recorded = recordings[index];
+                const recording = recordings[index];
+                const isPreview = recording && recording.status === 'preview';
+                const isUploaded = recording && recording.status === 'uploaded';
 
                 const wordItem = document.createElement('div');
-                wordItem.className = 'word-item';
+                wordItem.className = `word-item ${isPreview ? 'preview-mode' : ''}`;
                 wordItem.innerHTML = `
                     <div class="word-number">
                         <div class="word-number-text">${index + 1}</div>
@@ -350,39 +386,72 @@
                     </div>
                     <div class="word-content">
                         <div class="word-arabic">${word}</div>
-                        ${recorded ? '<div class="word-status">✓ Terekam & Uploaded</div>' : ''}
+                        ${isPreview ? '<div class="word-status preview">⚠️ Preview - Belum Diupload</div>' : ''}
+                        ${isUploaded ? '<div class="word-status uploaded">✅ Sudah Diupload</div>' : ''}
                     </div>
                     <div class="word-actions" id="actions-${index}">
-                        ${renderActions(index, recorded)}
+                        ${renderActions(index, recording)}
                     </div>
                 `;
                 wordList.appendChild(wordItem);
 
-                if (!recorded) {
-                    const recordBtn = document.getElementById(`record-${index}`);
-                    if (recordBtn) {
-                        recordBtn.addEventListener('click', () => startRecording(index));
-                    }
-                } else {
-                    const playBtn = document.getElementById(`play-${index}`);
-                    const deleteBtn = document.getElementById(`delete-${index}`);
-                    if (playBtn) playBtn.addEventListener('click', () => playRecording(index));
-                    if (deleteBtn) deleteBtn.addEventListener('click', () => deleteRecording(index));
-                }
+                attachEventListeners(index, recording);
             });
         }
 
-        function renderActions(index, recorded) {
+        function attachEventListeners(index, recording) {
             if (currentRecording === index) {
-                return `<button class="btn-icon btn-stop" id="stop-${index}" onclick="stopRecording()">⏹️</button>`;
+                // Recording mode - stop button
+                const stopBtn = document.getElementById(`stop-${index}`);
+                if (stopBtn) stopBtn.addEventListener('click', () => stopRecording());
+            } else if (recording && recording.status === 'preview') {
+                // Preview mode - play, publish, rerecord
+                const playBtn = document.getElementById(`play-${index}`);
+                const publishBtn = document.getElementById(`publish-${index}`);
+                const rerecordBtn = document.getElementById(`rerecord-${index}`);
+                
+                if (playBtn) playBtn.addEventListener('click', () => playRecording(index));
+                if (publishBtn) publishBtn.addEventListener('click', () => publishRecording(index));
+                if (rerecordBtn) rerecordBtn.addEventListener('click', () => rerecordAudio(index));
+            } else if (recording && recording.status === 'uploaded') {
+                // Uploaded mode - play, delete
+                const playBtn = document.getElementById(`play-${index}`);
+                const deleteBtn = document.getElementById(`delete-${index}`);
+                
+                if (playBtn) playBtn.addEventListener('click', () => playRecording(index));
+                if (deleteBtn) deleteBtn.addEventListener('click', () => deleteRecording(index));
+            } else {
+                // Initial mode - record button
+                const recordBtn = document.getElementById(`record-${index}`);
+                if (recordBtn) recordBtn.addEventListener('click', () => startRecording(index));
             }
-            if (!recorded) {
-                return `<button class="btn-icon btn-record" id="record-${index}">🎤</button>`;
+        }
+
+        function renderActions(index, recording) {
+            // Recording in progress
+            if (currentRecording === index) {
+                return `<button class="btn-icon btn-stop" id="stop-${index}">⏹️</button>`;
             }
-            return `
-                <button class="btn-icon btn-play" id="play-${index}">▶️</button>
-                <button class="btn-icon btn-delete" id="delete-${index}">🗑️</button>
-            `;
+            
+            // Preview mode (recorded but not uploaded)
+            if (recording && recording.status === 'preview') {
+                return `
+                    <button class="btn-icon btn-play" id="play-${index}" title="Play">▶️</button>
+                    <button class="btn-icon btn-publish" id="publish-${index}" title="Publish">📤</button>
+                    <button class="btn-icon btn-rerecord" id="rerecord-${index}" title="Rekam Ulang">🔄</button>
+                `;
+            }
+            
+            // Uploaded mode
+            if (recording && recording.status === 'uploaded') {
+                return `
+                    <button class="btn-icon btn-play" id="play-${index}" title="Play">▶️</button>
+                    <button class="btn-icon btn-delete" id="delete-${index}" title="Hapus">🗑️</button>
+                `;
+            }
+            
+            // Initial mode (no recording)
+            return `<button class="btn-icon btn-record" id="record-${index}" title="Rekam">🎤</button>`;
         }
 
         function getCategory(index) {
@@ -408,12 +477,12 @@
                     stream.getTracks().forEach(track => track.stop());
                     currentRecording = null;
                     
-                    await uploadToGoogleDrive(audioBlob, index);
-                    
+                    // Save as preview (not uploaded yet)
                     recordings[index] = {
                         blob: audioBlob,
                         url: audioUrl,
-                        word: words[index]
+                        word: words[index],
+                        status: 'preview'
                     };
 
                     renderWords();
@@ -434,16 +503,39 @@
             }
         }
 
-        async function uploadToGoogleDrive(blob, index) {
+        function playRecording(index) {
+            const recording = recordings[index];
+            if (!recording) return;
+            const audio = new Audio(recording.url);
+            audio.play();
+        }
+
+        function rerecordAudio(index) {
+            if (confirm('Rekam ulang audio ini?')) {
+                // Delete preview recording
+                if (recordings[index]) {
+                    URL.revokeObjectURL(recordings[index].url);
+                    delete recordings[index];
+                }
+                renderWords();
+                updateProgress();
+            }
+        }
+
+        async function publishRecording(index) {
+            const recording = recordings[index];
+            if (!recording || recording.status !== 'preview') return;
+
             const statusEl = document.getElementById('uploadStatus');
-            const fileName = `${USER_NAME}_${String(index + 1).padStart(3, '0')}.webm`;
+            const arabicWord = words[index];
+            const fileName = `${USER_NAME}_${String(index + 1).padStart(3, '0')}_${arabicWord}.webm`;
             
             statusEl.className = 'upload-status uploading';
             statusEl.textContent = `📤 Uploading ${fileName}...`;
 
             try {
                 const reader = new FileReader();
-                reader.readAsDataURL(blob);
+                reader.readAsDataURL(recording.blob);
                 
                 const base64Audio = await new Promise((resolve) => {
                     reader.onloadend = () => resolve(reader.result);
@@ -462,6 +554,13 @@
                 if (result.success) {
                     statusEl.className = 'upload-status success';
                     statusEl.textContent = `✅ ${fileName} berhasil diupload!`;
+                    
+                    // Update status to uploaded
+                    recordings[index].status = 'uploaded';
+                    
+                    renderWords();
+                    updateProgress();
+                    
                     setTimeout(() => {
                         statusEl.className = 'upload-status';
                     }, 3000);
@@ -474,16 +573,12 @@
             }
         }
 
-        function playRecording(index) {
-            const recording = recordings[index];
-            if (!recording) return;
-            const audio = new Audio(recording.url);
-            audio.play();
-        }
-
         function deleteRecording(index) {
-            if (confirm('Hapus rekaman ini? (File di Google Drive tetap ada)')) {
-                delete recordings[index];
+            if (confirm('Hapus rekaman ini? (File di Google Drive tetap ada, hanya dihapus dari daftar lokal)')) {
+                if (recordings[index]) {
+                    URL.revokeObjectURL(recordings[index].url);
+                    delete recordings[index];
+                }
                 renderWords();
                 updateProgress();
             }
@@ -491,10 +586,10 @@
 
         function updateProgress() {
             const total = words.length;
-            const recorded = Object.keys(recordings).length;
-            const percent = (recorded / total * 100).toFixed(0);
+            const uploaded = Object.values(recordings).filter(r => r.status === 'uploaded').length;
+            const percent = (uploaded / total * 100).toFixed(0);
 
-            document.getElementById('progressText').textContent = `Progress: ${recorded} / ${total} kata`;
+            document.getElementById('progressText').textContent = `Progress: ${uploaded} / ${total} kata diupload`;
             document.getElementById('progressPercent').textContent = `${percent}%`;
             document.getElementById('progressFill').style.width = `${percent}%`;
         }
