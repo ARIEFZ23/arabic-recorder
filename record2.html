@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arabic Audio Recorder - latifah </title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ecfdf5 0%, #99f6e4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #047857;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+
+        .upload-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .upload-status.uploading {
+            background: #fef3c7;
+            color: #92400e;
+            display: block;
+        }
+
+        .upload-status.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .upload-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .word-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .word-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+        }
+
+        .word-item:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .word-number {
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .word-number-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .word-category {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .word-content {
+            flex-grow: 1;
+        }
+
+        .word-arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            color: #1f2937;
+            direction: rtl;
+            margin-bottom: 5px;
+        }
+
+        .word-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+
+        .word-actions {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .btn-record {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-record:hover {
+            background: #059669;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-play {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #2563eb;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-icon:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .instructions {
+            background: #dbeafe;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .instructions h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            color: #1e40af;
+            line-height: 1.8;
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .word-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .word-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ Arabic Audio Recorder</h1>
+            <div class="user-badge">👤 KAKAK</div>
+            <p class="subtitle">Rekaman otomatis upload ke Google Drive!</p>
+
+            <div id="uploadStatus" class="upload-status"></div>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span id="progressText">Progress: 0 / 150 kata</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="word-list" id="wordList"></div>
+
+        <div class="instructions">
+            <h3>📖 Cara Pakai:</h3>
+            <ol>
+                <li>Klik tombol <strong>mikrofon 🎤</strong> untuk mulai rekam</li>
+                <li>Baca kata/frasa dengan jelas</li>
+                <li>Klik tombol <strong>stop ⏹️</strong> setelah selesai</li>
+                <li>Audio <strong>otomatis upload</strong> ke Google Drive dengan nama: <code>kakak_001.webm</code>, <code>kakak_002.webm</code>, dst</li>
+                <li>Bisa play ▶️ untuk cek, atau delete 🗑️ untuk rekam ulang</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxT9bLQ4kU-WyfqTDlrMpZ__5YRaPcRDSZwbR-NDRwT7MS7mPMFU3OhlG3fxANKki0/exec';
+        const USER_NAME = 'latifah';
+
+        const defaultWords = [
+            'مَرْحَبًا', 'شُكْرًا', 'نَعَمْ', 'لَا', 'مَاءٌ', 'كِتَابٌ', 'قَلَمٌ', 'بَيْتٌ', 'سَيَّارَةٌ', 'مَدْرَسَةٌ',
+            'مُعَلِّمٌ', 'طَالِبٌ', 'صَدِيقٌ', 'عَائِلَةٌ', 'أَبٌ', 'أُمٌّ', 'أَخٌ', 'أُخْتٌ', 'ابْنٌ', 'بِنْتٌ',
+            'يَوْمٌ', 'لَيْلَةٌ', 'صَبَاحٌ', 'مَسَاءٌ', 'شَمْسٌ', 'قَمَرٌ', 'سَمَاءٌ', 'أَرْضٌ', 'بَحْرٌ', 'جَبَلٌ',
+            'شَجَرَةٌ', 'زَهْرَةٌ', 'طَعَامٌ', 'شَرَابٌ', 'خُبْزٌ', 'لَحْمٌ', 'فَاكِهَةٌ', 'خُضَارٌ', 'حَلِيبٌ', 'عَسَلٌ',
+            'كَبِيرٌ', 'صَغِيرٌ', 'جَمِيلٌ', 'قَبِيحٌ', 'سَرِيعٌ', 'بَطِيءٌ', 'جَدِيدٌ', 'قَدِيمٌ', 'حَارٌّ', 'بَارِدٌ',
+            'اَلسَّلَامُ عَلَيْكُمْ', 'وَعَلَيْكُمُ السَّلَامُ', 'صَبَاحُ الْخَيْرِ', 'مَسَاءُ الْخَيْرِ', 'كَيْفَ حَالُكَ', 'بِخَيْرٍ وَالْحَمْدُ لِلّٰهِ', 'مَا اسْمُكَ', 'أَنَا طَالِبٌ', 'هٰذَا كِتَابٌ', 'تِلْكَ سَيَّارَةٌ',
+            'أَيْنَ الْمَدْرَسَةُ', 'فِي الْبَيْتِ', 'عَلَى الطَّاوِلَةِ', 'تَحْتَ الْكُرْسِيِّ', 'فَوْقَ السَّرِيرِ', 'أَمَامَ الْمَسْجِدِ', 'خَلْفَ الْبَابِ', 'بِجَانِبِ النَّافِذَةِ', 'بَيْنَ الشَّجَرَتَيْنِ', 'مِنْ فَضْلِكَ',
+            'شُكْرًا جَزِيلًا', 'عَفْوًا أَخِي', 'أَهْلًا وَسَهْلًا', 'مَعَ السَّلَامَةِ', 'إِلَى اللِّقَاءِ', 'تُصْبِحُ عَلَى خَيْرٍ', 'بَارَكَ اللّٰهُ', 'مَا شَاءَ اللّٰهُ', 'اَلْحَمْدُ لِلّٰهِ', 'إِنْ شَاءَ اللّٰهُ',
+            'أُرِيدُ مَاءً', 'أُحِبُّ الْقِرَاءَةَ', 'أَذْهَبُ لِلْمَدْرَسَةِ', 'أَدْرُسُ الْعَرَبِيَّةَ', 'أَكْتُبُ الْوَاجِبَ', 'أَكَلَ الطَّعَامَ', 'شَرِبَ الْحَلِيبَ', 'لَعِبَ الْكُرَةَ', 'نَامَ مُبَكِّرًا', 'اِسْتَيْقَظَ صَبَاحًا',
+            'طَقْسٌ جَمِيلٌ', 'يَوْمٌ حَارٌّ', 'لَيْلَةٌ بَارِدَةٌ', 'سَمَاءٌ صَافِيَةٌ', 'مَطَرٌ غَزِيرٌ', 'رِيحٌ قَوِيَّةٌ', 'شَمْسٌ سَاطِعَةٌ', 'قَمَرٌ مُنِيرٌ', 'نُجُومٌ لَامِعَةٌ', 'غُيُومٌ كَثِيرَةٌ',
+            'أَنَا أُحِبُّ الْقِرَاءَةَ', 'هُوَ طَالِبٌ مُجْتَهِدٌ', 'هِيَ مُعَلِّمَةٌ مُمْتَازَةٌ', 'نَحْنُ أَصْدِقَاءُ جَيِّدُونَ', 'هُمْ يَدْرُسُونَ الْعَرَبِيَّةَ', 'أَنْتَ تَكْتُبُ الدَّرْسَ', 'أَنْتُمْ تَلْعَبُونَ الْكُرَةَ', 'اَلْبَيْتُ كَبِيرٌ جِدًّا', 'اَلسَّيَّارَةُ سَرِيعَةٌ جِدًّا', 'اَلْكِتَابُ عَلَى الطَّاوِلَةِ',
+            'اَلْقَلَمُ فِي الْحَقِيبَةِ', 'اَلْمَدْرَسَةُ قَرِيبَةٌ مِنَ الْبَيْتِ', 'اَلطَّعَامُ لَذِيذٌ جِدًّا', 'اَلْمَاءُ بَارِدٌ مُنْعِشٌ', 'اَلْجَوُّ حَارٌّ الْيَوْمَ', 'اَلسَّمَاءُ صَافِيَةٌ جَمِيلَةٌ', 'اَلشَّجَرَةُ كَبِيرَةٌ خَضْرَاءُ', 'اَلزَّهْرَةُ جَمِيلَةٌ مُلَوَّنَةٌ', 'أَذْهَبُ إِلَى الْمَدْرَسَةِ', 'أُحِبُّ أَنْ أَقْرَأَ',
+            'أُرِيدُ أَنْ أَكْتُبَ', 'يَجِبُ أَنْ أَدْرُسَ', 'سَوْفَ أَذْهَبُ غَدًا', 'كُنْتُ فِي الْبَيْتِ', 'كَانَ الطَّقْسُ جَمِيلًا', 'سَيَكُونُ الْيَوْمُ سَعِيدًا', 'أَكَلْتُ التُّفَّاحَ اللَّذِيذَ', 'شَرِبْتُ الْمَاءَ الْبَارِدَ', 'لَعِبْتُ مَعَ أَصْدِقَائِي', 'دَرَسْتُ الدَّرْسَ جَيِّدًا',
+            'كَتَبْتُ الْوَاجِبَ الْمَنْزِلِيَّ', 'قَرَأْتُ الْقِصَّةَ الْجَمِيلَةَ', 'شَاهَدْتُ الْفِيلْمَ الْمُمْتِعَ', 'اِسْتَمَعْتُ إِلَى الْمُوسِيقَى', 'ذَهَبْتُ إِلَى السُّوقِ', 'اِشْتَرَيْتُ الْخُبْزَ الطَّازَجَ', 'رَأَيْتُ الطَّائِرَ الْجَمِيلَ', 'سَمِعْتُ الصَّوْتَ الْعَالِيَ', 'فَتَحْتُ الْبَابَ بِبُطْءٍ', 'أَغْلَقْتُ النَّافِذَةَ بِسُرْعَةٍ',
+            'نَظَّفْتُ الْغُرْفَةَ بِعِنَايَةٍ', 'رَتَّبْتُ الْكُتُبَ بِنِظَامٍ', 'طَبَخْتُ الطَّعَامَ اللَّذِيذَ', 'غَسَلْتُ الْمَلَابِسَ النَّظِيفَةَ', 'كَنَسْتُ الْأَرْضَ جَيِّدًا', 'مَسَحْتُ الطَّاوِلَةَ بِقِطْعَةٍ', 'زَرَعْتُ الزُّهُورَ الْجَمِيلَةَ', 'سَقَيْتُ النَّبَاتَاتِ بِمَاءٍ', 'قَطَفْتُ الْفَاكِهَةَ النَّاضِجَةَ', 'أَكَلْتُ الْعَشَاءَ مَسَاءً'
+        ];
+
+        let words = [...defaultWords];
+        let recordings = {};
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentRecording = null;
+
+        renderWords();
+        updateProgress();
+
+        function renderWords() {
+            const wordList = document.getElementById('wordList');
+            wordList.innerHTML = '';
+
+            words.forEach((word, index) => {
+                const category = getCategory(index);
+                const recorded = recordings[index];
+
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.innerHTML = `
+                    <div class="word-number">
+                        <div class="word-number-text">${index + 1}</div>
+                        <div class="word-category">${category}</div>
+                    </div>
+                    <div class="word-content">
+                        <div class="word-arabic">${word}</div>
+                        ${recorded ? '<div class="word-status">✓ Terekam & Uploaded</div>' : ''}
+                    </div>
+                    <div class="word-actions" id="actions-${index}">
+                        ${renderActions(index, recorded)}
+                    </div>
+                `;
+                wordList.appendChild(wordItem);
+
+                if (!recorded) {
+                    const recordBtn = document.getElementById(`record-${index}`);
+                    if (recordBtn) {
+                        recordBtn.addEventListener('click', () => startRecording(index));
+                    }
+                } else {
+                    const playBtn = document.getElementById(`play-${index}`);
+                    const deleteBtn = document.getElementById(`delete-${index}`);
+                    if (playBtn) playBtn.addEventListener('click', () => playRecording(index));
+                    if (deleteBtn) deleteBtn.addEventListener('click', () => deleteRecording(index));
+                }
+            });
+        }
+
+        function renderActions(index, recorded) {
+            if (currentRecording === index) {
+                return `<button class="btn-icon btn-stop" id="stop-${index}" onclick="stopRecording()">⏹️</button>`;
+            }
+            if (!recorded) {
+                return `<button class="btn-icon btn-record" id="record-${index}">🎤</button>`;
+            }
+            return `
+                <button class="btn-icon btn-play" id="play-${index}">▶️</button>
+                <button class="btn-icon btn-delete" id="delete-${index}">🗑️</button>
+            `;
+        }
+
+        function getCategory(index) {
+            if (index < 50) return '1 Kata';
+            if (index < 100) return '2 Kata';
+            return '3 Kata';
+        }
+
+        async function startRecording(index) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                    currentRecording = null;
+                    
+                    await uploadToGoogleDrive(audioBlob, index);
+                    
+                    recordings[index] = {
+                        blob: audioBlob,
+                        url: audioUrl,
+                        word: words[index]
+                    };
+
+                    renderWords();
+                    updateProgress();
+                };
+
+                mediaRecorder.start();
+                currentRecording = index;
+                renderWords();
+            } catch (error) {
+                alert('Tidak bisa akses microphone! Pastikan izin microphone diaktifkan.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+
+        async function uploadToGoogleDrive(blob, index) {
+            const statusEl = document.getElementById('uploadStatus');
+            const fileName = `${USER_NAME}_${String(index + 1).padStart(3, '0')}.webm`;
+            
+            statusEl.className = 'upload-status uploading';
+            statusEl.textContent = `📤 Uploading ${fileName}...`;
+
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                
+                const base64Audio = await new Promise((resolve) => {
+                    reader.onloadend = () => resolve(reader.result);
+                });
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        audio: base64Audio,
+                        filename: fileName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    statusEl.className = 'upload-status success';
+                    statusEl.textContent = `✅ ${fileName} berhasil diupload!`;
+                    setTimeout(() => {
+                        statusEl.className = 'upload-status';
+                    }, 3000);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                statusEl.className = 'upload-status error';
+                statusEl.textContent = `❌ Upload gagal: ${error.message}`;
+            }
+        }
+
+        function playRecording(index) {
+            const recording = recordings[index];
+            if (!recording) return;
+            const audio = new Audio(recording.url);
+            audio.play();
+        }
+
+        function deleteRecording(index) {
+            if (confirm('Hapus rekaman ini? (File di Google Drive tetap ada)')) {
+                delete recordings[index];
+                renderWords();
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const total = words.length;
+            const recorded = Object.keys(recordings).length;
+            const percent = (recorded / total * 100).toFixed(0);
+
+            document.getElementById('progressText').textContent = `Progress: ${recorded} / ${total} kata`;
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+        }
+    </script>
+</body>
+</html>
